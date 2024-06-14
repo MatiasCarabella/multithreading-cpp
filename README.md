@@ -27,7 +27,7 @@ To compile and run these examples, you need:
     git clone https://github.com/MatiasCarabella/multithreading-cpp.git
     cd multithreading-cpp
     ```
-2. Compile and run individual files/examples
+2. Compile and run individual files & examples
 
 ## License
 
