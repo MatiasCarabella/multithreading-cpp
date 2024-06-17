@@ -2,97 +2,124 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
-#include <random>
+#include <cstdlib>
+#include <ctime>
+
+using namespace std; // Para evitar el uso de std:: constantemente
 
 // Variable global compartida entre los hilos de tipo 1 y 2
 int Compartida = 0;
 
 // Mutex para sincronizar acceso a la variable Compartida
-std::mutex mtx;
+mutex mtx;
 
-// Clase para los hilos de tipo 1
-class HiloTipo1 {
-  private: int id_;
-  public: HiloTipo1(int id): id_(id) {}
+// Función para los hilos de tipo 1
+void hiloTipo1(int id) {
+    try {
+        // Mostrar mensaje identificando la instancia del hilo
+        cout << "Instancia " << id << " del hilo 1" << endl;
 
-  void operator()() {
-    // Mostrar mensaje
-    std::cout << "Instancia " << id_ << " del hilo 1" << std::endl;
+        // Generar un tiempo de suspensión aleatorio entre 0 y 2 segundos
+        int sleep_time = rand() % 2001; // rand() % 2001 genera un número entre 0 y 2000
+        this_thread::sleep_for(chrono::milliseconds(sleep_time));
 
-    // Generar un tiempo de suspensión aleatorio entre 0 y 2 segundos
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution < > dis(0, 2000);
-    int sleep_time = dis(gen);
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+        // Incrementar la variable global Compartida
+        lock_guard<mutex> guard(mtx); // Utiliza lock_guard para evitar deadlocks en caso de excepción
+        Compartida++;
+    } catch (const exception& e) {
+        // Capturar y mostrar cualquier excepción ocurrida durante la ejecución del hilo
+        cerr << "Excepción en hiloTipo1, id: " << id << ": " << e.what() << endl;
+    }
+}
 
-    // Incrementar la variable global Compartida
-    mtx.lock();
-    Compartida++;
-    mtx.unlock();
-  }
-};
+// Función para los hilos de tipo 2
+void hiloTipo2(int id) {
+    try {
+        // Mostrar mensaje identificando la instancia del hilo
+        cout << "Instancia " << id << " del hilo 2" << endl;
 
-// Clase para los hilos de tipo 2
-class HiloTipo2 {
-  private: int id_;
-  public: HiloTipo2(int id): id_(id) {}
+        // Generar un tiempo de suspensión aleatorio entre 0 y 2 segundos
+        int sleep_time = rand() % 2001; // rand() % 2001 genera un número entre 0 y 2000
+        this_thread::sleep_for(chrono::milliseconds(sleep_time));
 
-  void operator()() {
-    // Mostrar mensaje
-    std::cout << "Instancia " << id_ << " del hilo 2" << std::endl;
-
-    // Generar un tiempo de suspensión aleatorio entre 0 y 2 segundos
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution < > dis(0, 2000);
-    int sleep_time = dis(gen);
-    std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
-
-    // Leer y mostrar el valor de la variable global Compartida
-    mtx.lock();
-    std::cout << "Valor de la variable Compartida: " << Compartida << std::endl;
-    mtx.unlock();
-  }
-};
+        // Leer y mostrar el valor de la variable global Compartida
+        lock_guard<mutex> guard(mtx); // Utiliza lock_guard para evitar deadlocks en caso de excepción
+        cout << "Valor de la variable Compartida: " << Compartida << endl;
+    } catch (const exception& e) {
+        // Capturar y mostrar cualquier excepción ocurrida durante la ejecución del hilo
+        cerr << "Excepción en hiloTipo2, id: " << id << ": " << e.what() << endl;
+    }
+}
 
 int main() {
-  int N, M;
+    int N, M;
 
-  // Pedir al usuario que ingrese los valores de N y M
-  std::cout << "Ingrese el número de hilos de tipo 1 (N): ";
-  std::cin >> N;
+    try {
+        // Inicializar la semilla para la generación de números aleatorios
+        srand(static_cast<unsigned int>(time(0)));
 
-  std::cout << "Ingrese el número de hilos de tipo 2 (M): ";
-  std::cin >> M;
+        // Pedir al usuario que ingrese los valores de N y M
+        cout << "Ingrese el número de hilos de tipo 1 (N): ";
+        cin >> N;
+        if (cin.fail()) {
+            throw invalid_argument("Entrada inválida. Por favor ingrese números enteros.");
+        }
 
-  // Arreglos para almacenar los hilos
-  std::thread hilosTipo1[N];
-  std::thread hilosTipo2[M];
+        cout << "Ingrese el número de hilos de tipo 2 (M): ";
+        cin >> M;
+        if (cin.fail()) {
+            throw invalid_argument("Entrada inválida. Por favor ingrese números enteros.");
+        }
 
-  // Crear hilos de tipo 1
-  for (int i = 0; i < N; ++i) {
-    HiloTipo1 hilo(i);
-    hilosTipo1[i] = std::thread(hilo);
-  }
+        // Arreglos para almacenar los hilos
+        thread* hilosTipo1 = new thread[N];
+        thread* hilosTipo2 = new thread[M];
 
-  // Crear hilos de tipo 2
-  for (int i = 0; i < M; ++i) {
-    HiloTipo2 hilo(i);
-    hilosTipo2[i] = std::thread(hilo);
-  }
+        // Crear hilos de tipo 1
+        for (int i = 0; i < N; ++i) {
+            try {
+                hilosTipo1[i] = thread(hiloTipo1, i);
+            } catch (const exception& e) {
+                // Capturar y mostrar cualquier excepción ocurrida durante la creación del hilo
+                cerr << "Excepción al crear hilo de tipo 1, id: " << i << ": " << e.what() << endl;
+            }
+        }
 
-  // Esperar a que todos los hilos terminen su ejecución
-  for (int i = 0; i < N; ++i) {
-    hilosTipo1[i].join();
-  }
+        // Crear hilos de tipo 2
+        for (int i = 0; i < M; ++i) {
+            try {
+                hilosTipo2[i] = thread(hiloTipo2, i);
+            } catch (const exception& e) {
+                // Capturar y mostrar cualquier excepción ocurrida durante la creación del hilo
+                cerr << "Excepción al crear hilo de tipo 2, id: " << i << ": " << e.what() << endl;
+            }
+        }
 
-  for (int i = 0; i < M; ++i) {
-    hilosTipo2[i].join();
-  }
+        // Esperar a que todos los hilos de tipo 1 terminen su ejecución
+        for (int i = 0; i < N; ++i) {
+            if (hilosTipo1[i].joinable()) {
+                hilosTipo1[i].join();
+            }
+        }
 
-  // Mensaje de finalización
-  std::cout << "Se ha finalizado la ejecución." << std::endl;
+        // Esperar a que todos los hilos de tipo 2 terminen su ejecución
+        for (int i = 0; i < M; ++i) {
+            if (hilosTipo2[i].joinable()) {
+                hilosTipo2[i].join();
+            }
+        }
 
-  return 0;
+        // Liberar memoria asignada dinámicamente para los hilos
+        delete[] hilosTipo1;
+        delete[] hilosTipo2;
+
+        // Mensaje de finalización de la ejecución
+        cout << "Se ha finalizado la ejecución." << endl;
+
+    } catch (const exception& e) {
+        // Capturar y mostrar cualquier excepción ocurrida en la función principal
+        cerr << "Excepción en la función principal: " << e.what() << endl;
+    }
+
+    return 0;
 }
