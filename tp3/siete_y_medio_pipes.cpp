@@ -22,7 +22,6 @@ struct Jugador {
 };
 
 // Proceso jugador
-// Proceso jugador
 void jugador(int id, int pipe_lectura, int pipe_escritura) {
     srand(time(NULL) + id);  // Inicializar semilla aleatoria única para cada jugador
     float puntos = 0;
@@ -120,8 +119,6 @@ void iniciar_juego(int num_jugadores, vector<int> pipes_lectura, vector<int> pip
 
         if (jugador.abandonado) {
             cout << "Abandonó";
-        } else if (jugador.puntos > 7.5) {
-            cout << "Se pasó";
         } else {
             cout << "Se plantó";
             // Actualizar ganador si es necesario
