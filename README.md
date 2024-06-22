@@ -35,5 +35,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-cppreference.com - For C++ documentation and references.
+[cppreference.com](https://en.cppreference.com/w/) - For C++ documentation and references.
+
 OpenAI ChatGPT - For providing assistance in creating this README and helping with the project.
