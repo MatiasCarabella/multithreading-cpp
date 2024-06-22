@@ -22,6 +22,7 @@ struct Jugador {
 };
 
 // Proceso jugador
+// Proceso jugador
 void jugador(int id, int pipe_lectura, int pipe_escritura) {
     srand(time(NULL) + id);  // Inicializar semilla aleatoria única para cada jugador
     float puntos = 0;
@@ -34,11 +35,16 @@ void jugador(int id, int pipe_lectura, int pipe_escritura) {
 
         puntos += carta;
 
-        // Decidir acción (aleatoria en este caso)
-        // 0: pedir carta, 1: plantarse, 2: abandonar
-        int decision = rand() % 2;   
+        int decision;
+        if (puntos > 7.5) {
+            // Si se pasa de 7.5, abandona automáticamente
+            decision = 2; // 2: abandonar
+        } else {
+            // Decidir aleatoriamente entre plantarse (1) o pedir carta (0)
+            decision = rand() % 2;
+        }
 
-        if (decision == 1 || puntos > 7.5) {
+        if (decision == 1) {
             plantado = true;
         }
 
@@ -80,7 +86,7 @@ void iniciar_juego(int num_jugadores, vector<int> pipes_lectura, vector<int> pip
                 jugadores[i].puntos += carta;
 
                 // Actualizar estado del jugador según su decisión
-                if (decision == 1 || jugadores[i].puntos > 7.5) {
+                if (decision == 1) {
                     jugadores[i].plantado = true;
                 } else if (decision == 2) {
                     jugadores[i].abandonado = true;
