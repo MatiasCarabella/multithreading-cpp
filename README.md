@@ -31,10 +31,7 @@ To compile and run these examples, you need:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the [MIT License](LICENSE)
 
 ## Acknowledgments
-
-[cppreference.com](https://en.cppreference.com/w/) - For C++ documentation and references.
-
-OpenAI ChatGPT - For providing assistance in creating this README and helping with the project.
+- [cppreference.com](https://en.cppreference.com/w/) - For C++ documentation and references.
